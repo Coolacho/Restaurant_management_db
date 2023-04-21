@@ -1,4 +1,4 @@
-# restaurant_management_db
+# Restaurant_management_db
 University project wich consists in creating a mysql database for restaurant management.
 The database itself consists of 14 tables:
 1. Products, which stores the different dishes and beverages the restaurant offers
