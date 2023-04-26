@@ -61,13 +61,14 @@ DROP TABLE IF EXISTS workers_shifts;
 CREATE TABLE workers_shifts(
 worker_id INT NOT NULL,
 shift_id INT NOT NULL,
+num_of_tables INT NULL DEFAULT NULL,
 CONSTRAINT FOREIGN KEY FK_worker (worker_id) REFERENCES workers(id) ON DELETE RESTRICT ON UPDATE CASCADE,
 CONSTRAINT FOREIGN KEY FK_shift (shift_id) REFERENCES shifts(id) ON DELETE RESTRICT ON UPDATE CASCADE);
 
 DROP TABLE IF EXISTS table_type;
 CREATE TABLE table_type(
 id INT AUTO_INCREMENT PRIMARY KEY,
-type ENUM('booth', 'high top', 'bar', 'two to four', 'family') NOT NULL UNIQUE);
+type ENUM('booth', 'high top', 'bar', 'two to four', 'family') NOT NULL UNIQUE); #TODO ADD minimum and maximum number of people where min is default and aboce that you add chairs
 
 DROP TABLE IF EXISTS tables;
 CREATE TABLE tables(
@@ -94,8 +95,10 @@ num_of_chairs INT NOT NULL,
 avance_sum FLOAT,
 reservator_id INT NOT NULL,
 table_id INT NOT NULL,
+waiter_id INT NOT NULL,
 CONSTRAINT FOREIGN KEY FK_reservator (reservator_id) REFERENCES reservators(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-CONSTRAINT FOREIGN KEY FK_table (table_id) REFERENCES tables(id) ON DELETE RESTRICT ON UPDATE CASCADE);
+CONSTRAINT FOREIGN KEY FK_table (table_id) REFERENCES tables(id) ON DELETE RESTRICT ON UPDATE CASCADE, #TODO Make the connection M to M aka add another table so that one reservation can take multiple tables
+CONSTRAINT FOREIGN KEY FK_worker (waiter_id) REFERENCES workers(id) ON DELETE RESTRICT ON UPDATE CASCADE);
 
 DROP TABLE IF EXISTS bills;
 CREATE TABLE bills(
