@@ -1,5 +1,6 @@
 # Restaurant_management_db
 University project wich consists in creating a mysql database for restaurant management.
+
 The database itself consists of 14 tables:
 1. Products, which stores the different dishes and beverages the restaurant offers
 2. Income, for the profit of the restaurant.
@@ -15,4 +16,13 @@ The database itself consists of 14 tables:
 
 *ER-diagram of the database will be uploaded soon*
 
-*Additional information about the triggers and stored procedures will be uploaded when the respective code is uploaded*
+Stored procedures:
+1. The first one is made to fill the shifts table with all the possible shifts for a day from the date that is passed in until the end of the month. There are 3 4-hour shifts, 2 6-hour shifts, 2 8-hour shifts and 1 12-hour shift. There's a test call for the procedure after the declaration to test it.
+2. The second procedures receives a reservation id and a JSON array full of integers that represent products' ids then adds the ids to a temporary table that represents the bill. After that it sums the prices of the products and inserts a row in bills table with the respective reservation id and amount.
+
+Triggers:
+1. The first trigger is made to associate a table and a waiter to each reservation when its added.
+  It chooses the waiter that works in a shift and has taken/ is associated with the least amount of tables for that shift, after that it updates the number of taken    tables by 1.
+  *The choice of table is yet to be completed*
+
+*Additional information about the triggers, stored procedures and events will be uploaded when the respective code is uploaded*
