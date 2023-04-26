@@ -17,6 +17,15 @@ BEGIN
 								WHERE (NEW.date BETWEEN shifts.start_time AND shifts.end_time)
 								AND (worker_type.type = 'waiter')) AS waiters_on_shift 
 						 WHERE waiters_on_shift.num_of_tables = (SELECT MIN(num_of_tables) FROM waiters_on_shift));
+                         
+	UPDATE workers_shifts
+    SET num_of_tables = num_of_tables + 1
+    WHERE worker_id = (SELECT worker_id
+						FROM workers_shifts
+						JOIN shifts ON
+						workers_shifts.shift_id = shifts.id
+						WHERE (NEW.date BETWEEN shifts.start_time AND shifts.end_time)
+						AND worker_id = NEW.waiter_id);
     
     SET NEW.table_id = (SELECT id
 						FROM tables);#FINISH THE TRIGGER!!!
