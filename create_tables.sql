@@ -12,7 +12,7 @@ DROP TABLE IF EXISTS income;
 CREATE TABLE income(
 issue_date DATE PRIMARY KEY,
 amount FLOAT NOT NULL,
-CONSTRAINT CHK_income_date CHECK (DAY(issue_date) = '01'));
+CONSTRAINT CHK_income_date CHECK (DAY(issue_date) = 1));
 
 DROP TABLE IF EXISTS tax_type;
 CREATE TABLE tax_type(
@@ -22,10 +22,19 @@ type ENUM('supply', 'electricity', 'water', 'salaries') NOT NULL UNIQUE);
 DROP TABLE IF EXISTS taxes;
 CREATE TABLE taxes(
 id INT AUTO_INCREMENT PRIMARY KEY,
-issue_date DATE NOT NULL UNIQUE,
+issue_date DATE NOT NULL,
+amount FLOAT NOT NULL,
+is_payed BOOLEAN NOT NULL DEFAULT FALSE,
 type_id INT NOT NULL,
-CONSTRAINT CHK_taxes_date CHECK (DAY(issue_date) = '01'),
+UNIQUE (issue_date, type_id),
 CONSTRAINT FOREIGN KEY FK_type (type_id) REFERENCES tax_type(id) ON DELETE RESTRICT ON UPDATE CASCADE);
+
+DROP TABLE IF EXISTS tax_payments;
+CREATE TABLE tax_payments(
+id INT AUTO_INCREMENT PRIMARY KEY,
+date_payed DATE NOT NULL,
+tax_id INT NOT NULL UNIQUE,
+CONSTRAINT FOREIGN KEY FK_tax (tax_id) REFERENCES taxes(id) ON DELETE RESTRICT ON UPDATE CASCADE);
 
 DROP TABLE IF EXISTS worker_type;
 CREATE TABLE worker_type(
@@ -42,12 +51,20 @@ CONSTRAINT FOREIGN KEY FK_type (type_id) REFERENCES worker_type(id) ON DELETE RE
 
 DROP TABLE IF EXISTS salaries;
 CREATE TABLE salaries(
-issue_date DATE PRIMARY KEY,
+id INT AUTO_INCREMENT PRIMARY KEY,
+issue_date DATE NOT NULL,
 amount FLOAT NOT NULL,
-is_payed BOOLEAN NOT NULL,
+is_payed BOOLEAN NOT NULL DEFAULT FALSE,
 worker_id INT NOT NULL,
-CONSTRAINT CHK_date CHECK (DAY(issue_date) = '01'),
+UNIQUE (issue_date, worker_id),
 CONSTRAINT FOREIGN KEY FK_worker (worker_id) REFERENCES workers(id) ON DELETE RESTRICT ON UPDATE CASCADE);
+
+DROP TABLE IF EXISTS salary_payments;
+CREATE TABLE salary_payments(
+id INT AUTO_INCREMENT PRIMARY KEY,
+date_payed DATE NOT NULL,
+salary_id INT NOT NULL UNIQUE,
+CONSTRAINT FOREIGN KEY FK_salary (salary_id) REFERENCES salaries(id) ON DELETE RESTRICT ON UPDATE CASCADE);
 
 DROP TABLE IF EXISTS shifts;
 CREATE TABLE shifts(
@@ -61,14 +78,16 @@ DROP TABLE IF EXISTS workers_shifts;
 CREATE TABLE workers_shifts(
 worker_id INT NOT NULL,
 shift_id INT NOT NULL,
-num_of_tables INT NULL DEFAULT NULL,
+reservations_taken INT NULL DEFAULT NULL,
 CONSTRAINT FOREIGN KEY FK_worker (worker_id) REFERENCES workers(id) ON DELETE RESTRICT ON UPDATE CASCADE,
 CONSTRAINT FOREIGN KEY FK_shift (shift_id) REFERENCES shifts(id) ON DELETE RESTRICT ON UPDATE CASCADE);
 
 DROP TABLE IF EXISTS table_type;
 CREATE TABLE table_type(
 id INT AUTO_INCREMENT PRIMARY KEY,
-type ENUM('booth', 'high top', 'bar', 'two to four', 'family') NOT NULL UNIQUE); #TODO ADD minimum and maximum number of people where min is default and aboce that you add chairs
+type ENUM('booth', 'high top', 'bar', 'two to four', 'family') NOT NULL UNIQUE,
+min_num_of_people INT NOT NULL, #3, 2, 1, 2, 5
+max_num_of_people INT NOT NULL);#5, 5, 1, 4, 8 
 
 DROP TABLE IF EXISTS tables;
 CREATE TABLE tables(
@@ -91,14 +110,20 @@ id INT AUTO_INCREMENT PRIMARY KEY,
 date DATETIME NOT NULL,
 is_smoking BOOLEAN NOT NULL,
 num_of_people INT NOT NULL,
-num_of_chairs INT NOT NULL,
-avance_sum FLOAT,
+num_of_chairs INT NULL DEFAULT NULL,
+avance_amount FLOAT NULL DEFAULT 0,
 reservator_id INT NOT NULL,
-table_id INT NOT NULL,
 waiter_id INT NOT NULL,
 CONSTRAINT FOREIGN KEY FK_reservator (reservator_id) REFERENCES reservators(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-CONSTRAINT FOREIGN KEY FK_table (table_id) REFERENCES tables(id) ON DELETE RESTRICT ON UPDATE CASCADE, #TODO Make the connection M to M aka add another table so that one reservation can take multiple tables
 CONSTRAINT FOREIGN KEY FK_worker (waiter_id) REFERENCES workers(id) ON DELETE RESTRICT ON UPDATE CASCADE);
+
+DROP TABLE IF EXISTS tables_reservations;
+CREATE TABLE tables_reservations(
+id INT AUTO_INCREMENT PRIMARY KEY,
+table_id INT NULL DEFAULT NULL,
+reservation_id INT NOT NULL,
+CONSTRAINT FOREIGN KEY FK_table (table_id) REFERENCES tables(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+CONSTRAINT FOREIGN KEY FK_reservation (reservation_id) REFERENCES reservations(id) ON DELETE RESTRICT ON UPDATE CASCADE);
 
 DROP TABLE IF EXISTS bills;
 CREATE TABLE bills(
