@@ -14,7 +14,7 @@ The database itself consists of 14 tables:
 10. Reservators table wich keeps the information for the people that make reservations
 11. Bills table wich stores the bill of every reservation in numerical and possibly pdf version.
 
-*ER-diagram of the database will be uploaded soon*
+![image](https://user-images.githubusercontent.com/54374165/236259716-9a2c431e-941d-44b1-8e52-7fb90bd90f01.png)
 
 Stored procedures:
 1. The first one is made to fill the shifts table with all the possible shifts for a day from the date that is passed in until the end of the month. There are 3 4-hour shifts, 2 6-hour shifts, 2 8-hour shifts and 1 12-hour shift. There's a test call for the procedure after the declaration to test it.
