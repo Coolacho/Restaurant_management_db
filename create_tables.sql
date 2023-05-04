@@ -10,7 +10,8 @@ price FLOAT NOT NULL);
 
 DROP TABLE IF EXISTS income;
 CREATE TABLE income(
-issue_date DATE PRIMARY KEY,
+id INT AUTO_INCREMENT PRIMARY KEY,
+issue_date DATE UNIQUE,
 amount FLOAT NOT NULL,
 CONSTRAINT CHK_income_date CHECK (DAY(issue_date) = 1));
 
@@ -76,6 +77,7 @@ CONSTRAINT CHK_shift CHECK (DATE(start_time) = DATE(end_time)));
 
 DROP TABLE IF EXISTS workers_shifts;
 CREATE TABLE workers_shifts(
+id INT AUTO_INCREMENT PRIMARY KEY,
 worker_id INT NOT NULL,
 shift_id INT NOT NULL,
 reservations_taken INT NULL DEFAULT NULL,
@@ -113,9 +115,9 @@ num_of_people INT NOT NULL,
 num_of_chairs INT NULL DEFAULT NULL,
 avance_amount FLOAT NULL DEFAULT 0,
 reservator_id INT NOT NULL,
-waiter_id INT NOT NULL,
+worker_id INT NOT NULL,
 CONSTRAINT FOREIGN KEY FK_reservator (reservator_id) REFERENCES reservators(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-CONSTRAINT FOREIGN KEY FK_worker (waiter_id) REFERENCES workers(id) ON DELETE RESTRICT ON UPDATE CASCADE);
+CONSTRAINT FOREIGN KEY FK_worker (worker_id) REFERENCES workers(id) ON DELETE RESTRICT ON UPDATE CASCADE);
 
 DROP TABLE IF EXISTS tables_reservations;
 CREATE TABLE tables_reservations(

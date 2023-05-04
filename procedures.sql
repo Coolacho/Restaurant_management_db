@@ -80,9 +80,9 @@ CALL calculate_bill(1, '[1, 1, 2, 3]');
 #Procedure that associates the waiter with least amount of tables taken for a shift with a reservation
 DROP PROCEDURE IF EXISTS add_waiter_to_reservation;
 DELIMITER |
-CREATE PROCEDURE add_waiter_to_reservation(IN reservation_date DATETIME, OUT waiter_id INT)
+CREATE PROCEDURE add_waiter_to_reservation(IN reservation_date DATETIME, OUT worker_id INT)
 BEGIN
-	SELECT worker_id INTO waiter_id
+	SELECT worker_shifts.worker_id INTO worker_id
     FROM (SELECT worker_id
 			FROM workers_shifts
 			JOIN shifts ON
