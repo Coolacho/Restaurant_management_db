@@ -48,7 +48,7 @@ BEGIN
     
     #Check if there are more chairs than people
     IF (NEW.num_of_chairs > NEW.num_of_people)
-    THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = "Number of chairs can't be bigger than the number of people";
+    THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = "Number of chairs can't be greater than the number of people";
     END IF;
     
 END
