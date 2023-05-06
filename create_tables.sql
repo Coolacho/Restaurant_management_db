@@ -81,6 +81,7 @@ id INT AUTO_INCREMENT PRIMARY KEY,
 worker_id INT NOT NULL,
 shift_id INT NOT NULL,
 reservations_taken INT NULL DEFAULT NULL,
+UNIQUE(worker_id, shift_id),
 CONSTRAINT FOREIGN KEY FK_worker (worker_id) REFERENCES workers(id) ON DELETE RESTRICT ON UPDATE CASCADE,
 CONSTRAINT FOREIGN KEY FK_shift (shift_id) REFERENCES shifts(id) ON DELETE RESTRICT ON UPDATE CASCADE);
 
@@ -104,7 +105,7 @@ id INT AUTO_INCREMENT PRIMARY KEY,
 name VARCHAR(255) NOT NULL,
 telephone VARCHAR(20) NOT NULL,
 email VARCHAR(100) NOT NULL,
-CONSTRAINT CHK_telephone CHECK (LENGTH(telephone) = 20));
+CONSTRAINT CHK_telephone CHECK (LENGTH(telephone) = 10));
 
 DROP TABLE IF EXISTS reservations;
 CREATE TABLE reservations(
@@ -115,7 +116,7 @@ num_of_people INT NOT NULL,
 num_of_chairs INT NULL DEFAULT NULL,
 avance_amount FLOAT NULL DEFAULT 0,
 reservator_id INT NOT NULL,
-worker_id INT NOT NULL,
+worker_id INT NULL,
 CONSTRAINT FOREIGN KEY FK_reservator (reservator_id) REFERENCES reservators(id) ON DELETE RESTRICT ON UPDATE CASCADE,
 CONSTRAINT FOREIGN KEY FK_worker (worker_id) REFERENCES workers(id) ON DELETE RESTRICT ON UPDATE CASCADE);
 

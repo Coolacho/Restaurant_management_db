@@ -77,29 +77,6 @@ CALL calculate_bill(1, '[1, 1, 2, 3]');
 
 #..........................................................................................
 
-#Procedure that associates the waiter with least amount of tables taken for a shift with a reservation
-DROP PROCEDURE IF EXISTS add_waiter_to_reservation;
-DELIMITER |
-CREATE PROCEDURE add_waiter_to_reservation(IN reservation_date DATETIME, OUT worker_id INT)
-BEGIN
-	SELECT worker_shifts.worker_id INTO worker_id
-    FROM (SELECT worker_id
-			FROM workers_shifts
-			JOIN shifts ON
-			workers_shifts.shift_id = shifts.id
-			JOIN workers ON
-			workers_shifts.worker_id = workers.id
-			JOIN worker_type ON
-			workers.type_id = worker_type.id
-			WHERE (reservation_date BETWEEN shifts.start_time AND shifts.end_time)
-			AND (worker_type.type = 'waiter')) AS waiters_on_shift 
-			WHERE waiters_on_shift.reservations_taken = (SELECT MIN(reservations_taken) FROM waiters_on_shift);
-END
-|
-DELIMITER ;
-
-#..........................................................................................
-
 #Function that calculates the work hours of a worker by given month and year
 #It's used in the following procedure that calculates salaries
 DROP FUNCTION IF EXISTS calculate_work_hours;
@@ -196,7 +173,7 @@ BEGIN
     DECLARE salaries_payed INT;
     DECLARE finished INT;
     DECLARE salary_cursor CURSOR FOR
-    SELECT id, amount
+    SELECT id
     FROM salaries
     WHERE MONTH(issue_date) = month
     AND YEAR(issue_date) = year
@@ -251,7 +228,7 @@ BEGIN
     DECLARE taxes_payed INT;
     DECLARE finished INT;
     DECLARE tax_cursor CURSOR FOR
-    SELECT id, amount
+    SELECT id
     FROM taxes
     WHERE MONTH(issue_date) = month
     AND YEAR(issue_date) = year
@@ -266,8 +243,8 @@ BEGIN
     AND YEAR(issue_date) = year
     AND is_payed = FALSE;
 
-	OPEN tax_cursor;
 	START TRANSACTION;
+	OPEN tax_cursor;
     tax_loop: WHILE (finished = 0)
 					DO
                     FETCH tax_cursor INTO temp_tax_id;
@@ -278,7 +255,7 @@ BEGIN
                     VALUES (DATE(NOW()), temp_tax_id);
                     UPDATE taxes
                     SET is_payed = TRUE
-                    WHERE tax.id = temp_tax_id;
+                    WHERE taxes.id = temp_tax_id;
 					END WHILE;
 	CLOSE tax_cursor;
     SET finished = 0;
@@ -287,7 +264,7 @@ BEGIN
     FROM tax_payments
     WHERE date_payed = DATE(NOW());
     
-    IF (taxess_to_be_payed = taxes_payed)
+    IF (taxes_to_be_payed = taxes_payed)
     THEN COMMIT;
     ELSE ROLLBACK;
     END IF;

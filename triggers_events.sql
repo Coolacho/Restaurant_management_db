@@ -21,31 +21,35 @@ DELIMITER |
 CREATE TRIGGER check_reservation_info BEFORE INSERT ON reservations
 FOR EACH ROW
 BEGIN
-	#Choose a worker that is a waiter and is on shift when the reservation starts and has the least amount of taken tables
-    CALL add_waiter_to_reservation(NEW.date, NEW.waiter_id);
+
+	DECLARE shift_for_reservation INT;
     
-    #Check if there is no waiter selected and terminate the insert.
-    IF (ISNULL(NEW.waiter_id))
-    THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = "Can't associate waiter to the reservation. No waiters on shift.";
+    SELECT shift_id INTO shift_for_reservation
+	FROM workers_shifts
+    JOIN shifts
+    ON shifts.id = shift_id
+    WHERE worker_id = NEW.worker_id
+    AND NEW.date BETWEEN shifts.start_time AND shifts.end_time;
+
+    IF ((SELECT id
+		FROM worker_type
+        WHERE type = 'waiter') = (SELECT type_id
+								 FROM workers
+                                 WHERE id = NEW.worker_id))
+	THEN IF (ISNULL(shift_for_reservation))
+		THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Selected waiter is not on shift!';
+        ELSE UPDATE workers_shifts #Update the amount of taken tables by the choosen waiter
+			 SET reservations_taken = reservations_taken + 1
+			 WHERE worker_id = NEW.worker_id
+             AND shift_id = shift_for_reservation;
+        END IF;
+    ELSE SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Selected worker is not a waiter!';
     END IF;
     
-    #Update the amount of taken tables by the choosen waiter
-	UPDATE workers_shifts
-    SET reservations_taken = reservations_taken + 1
-    WHERE worker_id = (SELECT worker_id
-						FROM workers_shifts
-						JOIN shifts ON
-						workers_shifts.shift_id = shifts.id
-						WHERE (NEW.date BETWEEN shifts.start_time AND shifts.end_time)
-						AND worker_id = NEW.waiter_id);
-    
+    #Check if there are more chairs than people
     IF (NEW.num_of_chairs > NEW.num_of_people)
     THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = "Number of chairs can't be bigger than the number of people";
     END IF;
-    
-    #Insert the reservation with pending table to appoint
-    INSERT INTO tables_reservations (reservation_id)
-    VALUES (NEW.id);
     
 END
 |
@@ -95,3 +99,35 @@ END
 DELIMITER ;
 
 #..........................................................................................
+
+DROP TRIGGER IF EXISTS check_worker_shift;
+DELIMITER |
+CREATE TRIGGER check_worker_shift BEFORE INSERT ON workers_shifts
+FOR EACH ROW
+BEGIN
+	DECLARE shift_start_time DATETIME;
+    
+    SELECT start_time INTO shift_start_time
+	FROM shifts
+	WHERE shifts.id = NEW.shift_id;
+   
+	IF EXISTS (SELECT shift_id
+				FROM workers_shifts
+                JOIN shifts
+                ON shifts.id = shift_id
+                WHERE shift_start_time BETWEEN start_time AND end_time
+                AND worker_id = NEW.worker_id)
+	THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Worker already is on shift at this time';
+	END IF;
+    
+    IF ((SELECT id
+		FROM worker_type
+        WHERE type = 'waiter') = (SELECT type_id
+								 FROM workers
+                                 WHERE id = NEW.worker_id))
+	THEN SET NEW.reservations_taken = 0;
+    END IF;
+    
+END
+|
+DELIMITER ;
