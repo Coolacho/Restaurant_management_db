@@ -4,14 +4,17 @@ University project wich consists in creating a mysql database for restaurant man
 The database itself consists of 17 tables:
 1. Products, which stores the different dishes and beverages the restaurant offers.
 2. Income, for the profit of the restaurant.
-3,4. Taxes, for tracking the expenses and a respective table for the different tax types.
+3. Taxes, for tracking the expenses.
+4. Tax_type table for the different tax types.
 5. Tax_payments, that stores which taxes are payed and when.
-6,7. Workers, wich stores the information for the people working in the restaurant and a worker_type table for keeping track of the position wich a person occupies.
+6. Workers, wich stores the information for the people working in the restaurant.
+7. Worker_type table for keeping track of the position wich a person occupies.
 8. Salaries, for keeping track of the payments each month to the workers.
 9. Salary payments, that stores which salaries are payed and when.
 10. Shifts table for all the shifts that the people can take.
 11. Worker_shift table for the realisation of M to M link between the workers and shifts tables.
-12,13. Tables and table_type for storing all the available tables and their types in the restaurant.
+12. Tables for storing all the available tables in the restaurant and this way each table has an id to help waiters locate and manage the tables which are appointed to them.
+13. Table_type for the different table types.
 14. Reservations table for all the reservations made.
 15. Table_reservations that links tables and reservations in a M to M connection.
 16. Reservators table wich keeps the information for the people that make reservations.
@@ -23,7 +26,8 @@ Stored procedures:
 1. The first one fill_shifts() is made to fill the shifts table with all the possible shifts for a day from the date that is passed in until the end of the month. There are 3 4-hour shifts, 2 6-hour shifts, 2 8-hour shifts and 1 12-hour shift. The procedure is then added to an event that is scheduled every month, so that at the start of the month the default shifts are available.
 2. The second procedure calculate_bill() receives a reservation id and a JSON array full of integers that represent products' ids then adds the ids to a temporary table that represents the bill. After that it sums the prices of the products and inserts a row in bills table with the respective reservation id and amount.
 3. The third procedure calculate_salaries() takes a month and an year and calculates the salary that a worker shall receive based on the hours worked that month.*
-4, 5. The next two procedures pay_salaries() and pay_taxes() are identical. They receive a month and an year and pay all the accumalated salaries/taxes for that period.
+4. The next procedure pay_salaries() receives a month and an year and pay all the accumalated salaries for that period.
+5. The pay_taxes() procedure is identical to pay_salary() except it works on taxes and not on salaries.
 6. The last procedure calculate_income() again takes a period of time in form of a month and an year and sums all the bills for it and substracts all the taxes. After that it makes a new record in the income table.
 
 *To calculate the work hours there is a function that returns the worked hours by a worker for a given period. 
